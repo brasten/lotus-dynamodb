@@ -30,7 +30,7 @@ module Lotus
         #
         # @api private
         # @since 0.1.0
-        def initialize(mapper)
+        def initialize(mapper, uri=nil)
           super
 
           @client = Aws::DynamoDB::Client.new(
