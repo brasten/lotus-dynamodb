@@ -18,7 +18,7 @@ module Lotus
 
         # Initialize the adapter.
         #
-        # It takes advantage of AWS::DynamoDB::Client to perform all operations.
+        # It takes advantage of Aws::DynamoDB::Client to perform all operations.
         #
         # @param mapper [Object] the database mapper
         #
@@ -26,15 +26,15 @@ module Lotus
         #
         # @see Lotus::Model::Mapper
         # @see Lotus::Dynamodb::API_VERSION
-        # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS/DynamoDB/Client/V20120810.html
+        # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html
         #
         # @api private
         # @since 0.1.0
         def initialize(mapper)
           super
 
-          @client = AWS::DynamoDB::Client.new(
-            api_version: Lotus::Dynamodb::API_VERSION
+          @client = Aws::DynamoDB::Client.new(
+            #api_version: Lotus::Dynamodb::API_VERSION
           )
           @collections = {}
         end

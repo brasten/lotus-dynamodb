@@ -1,4 +1,4 @@
-DB = AWS::DynamoDB::Client.new(api_version: Lotus::Dynamodb::API_VERSION)
+DB = Aws::DynamoDB::Client.new   #(api_version: Lotus::Dynamodb::API_VERSION)
 
 begin
   DB.create_table(
@@ -71,5 +71,5 @@ begin
       write_capacity_units: 50,
     },
   )
-rescue AWS::DynamoDB::Errors::ResourceInUseException
+rescue Aws::DynamoDB::Errors::ResourceInUseException
 end

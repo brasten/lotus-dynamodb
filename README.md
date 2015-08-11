@@ -8,7 +8,7 @@
 This adapter implements persistence layer for a [Amazon DynamoDB](https://aws.amazon.com/dynamodb/),
 and it pretends to be a _really_ sane solution to fully experience DynamoDB advantages with Ruby.
 
-It is built using ```AWS::DynamoDB::Client```, which is a part of ```aws-sdk``` gem and implements latest version of DynamoDB protocol.
+It is built using ```Aws::DynamoDB::Client```, which is a part of ```aws-sdk``` gem and implements latest version of DynamoDB protocol.
 
 ## Status
 
@@ -48,7 +48,7 @@ This adapter supports coercion to all DynamoDB types, including blobs and sets.
 
 List of Ruby types that are supported:
 
-* AWS::DynamoDB::Binary – ```B```
+* StringIO – ```B```
 * Array – ```S``` (via MultiJson)
 * Boolean – ```N``` (1 for true and 0 for false)
 * Date – ```N``` (Integer, seconds since Epoch)
@@ -56,7 +56,7 @@ List of Ruby types that are supported:
 * Float – ```N```
 * Hash – ```S``` (via MultiJson)
 * Integer – ```N```
-* Set – ```SS```, ```NS```, ```BS``` (Set of String, Number or AWS::DynamoDB::Binary)
+* Set – ```SS```, ```NS```, ```BS``` (Set of String, Number or StringIO)
 * String – ```S```
 * Time – ```N``` (Float, seconds since Epoch)
 

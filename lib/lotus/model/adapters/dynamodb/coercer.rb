@@ -10,19 +10,8 @@ module Lotus
         # @api private
         # @since 0.1.0
         class Coercer < Lotus::Model::Mapping::Coercer
-          SKIPPED_KLASSES = [Float, Integer, Set, String]
-          SUPPORTED_KLASSES = [AWS::DynamoDB::Binary, Array, Boolean, Date, DateTime, Hash, Time]
-
-          # Converts value from given type to DynamoDB record value.
-          #
-          # @api private
-          # @since 0.1.0
-          def from_aws_dynamodb_binary(value)
-            return value if value.nil? || value.is_a?(AWS::DynamoDB::Binary)
-            AWS::DynamoDB::Binary.new(value)
-          end
-
-          alias_method :to_aws_dynamodb_binary, :from_aws_dynamodb_binary
+          SKIPPED_KLASSES = [Float, Integer, Set, String, IO, StringIO]
+          SUPPORTED_KLASSES = [Array, Boolean, Date, DateTime, Hash, Time]
 
           # Converts value from given type to DynamoDB record value.
           #
@@ -96,6 +85,27 @@ module Lotus
             Time.at(value.to_f).to_datetime
           end
 
+          # # Converts value from given type to DynamoDB record value.
+          # #
+          # # @api private
+          # # @since 0.2.0
+          # def from_io(value)
+          #   return if value.nil?
+          #
+          #   value
+          # end
+          #
+          # # Converts value from DynamoDB record value to given type.
+          # #
+          # # @api private
+          # # @since 0.2.0
+          # def to_io(value)
+          #   return if value.nil?
+          #   return StringIO.new(value) if value.kind_of?(String)
+          #
+          #   return value.to_io
+          # end
+
           # Converts value from given type to DynamoDB record value.
           #
           # @api private
@@ -166,7 +176,7 @@ module Lotus
           # @api private
           # @since 0.1.1
           def _compile_record!
-            instance_eval %{
+            instance_eval <<-EOV, __FILE__, __LINE__
               def to_record(entity)
                 if entity.id
                   Hash[*[#{ @collection.attributes.map{|name,(klass,mapped)| ":#{mapped},from_#{_method_name(klass)}(entity.#{name})"}.join(',') }]]
@@ -180,7 +190,7 @@ module Lotus
                   Hash[*[#{ @collection.attributes.map{|name,(klass,mapped)| ":#{name},#{coercions_wrap(klass) { "to_#{_method_name(klass)}(record[:#{mapped}])" }}"}.join(',') }]]
                 )
               end
-            }
+            EOV
           end
 
           # Compile deserialise/serialize methods.
@@ -209,7 +219,11 @@ module Lotus
             if klass.to_s.include?("::")
               yield
             else
-              "Lotus::Model::Mapping::Coercions.#{klass}(#{yield})"
+              if Lotus::Model::Mapping::Coercions.respond_to?(:"#{klass}")
+                "Lotus::Model::Mapping::Coercions.#{klass}(#{yield})"
+              else
+                yield
+              end
             end
           end
 

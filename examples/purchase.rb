@@ -4,10 +4,10 @@ Bundler.require(:default)
 require 'lotus/model'
 require 'lotus-dynamodb'
 
-AWS.config(
-  use_ssl: false,
-  dynamo_db_endpoint: 'localhost',
-  dynamo_db_port: 4567,
+Aws.config(
+  # use_ssl: false,
+  # dynamo_db_endpoint: 'localhost',
+  # dynamo_db_port: 4567,
   access_key_id: '',
   secret_access_key: '',
 )
@@ -22,11 +22,11 @@ AWS.config(
 # know a ```region``` of these records.
 #
 
-DB = AWS::DynamoDB::Client.new(api_version: Lotus::Dynamodb::API_VERSION)
+DB = Aws::DynamoDB::Client.new   #(api_version: Lotus::Dynamodb::API_VERSION)
 
 begin
   DB.describe_table("purchases")
-rescue AWS::DynamoDB::Errors::ResourceNotFoundException
+rescue Aws::DynamoDB::Errors::ResourceNotFoundException
   DB.create_table(
     table_name: "purchases",
 
@@ -123,7 +123,7 @@ mapper = Lotus::Model::Mapper.new(coercer) do
     attribute :region,     String
     attribute :subtotal,   Float
     attribute :item_ids,   Set
-    attribute :content,    AWS::DynamoDB::Binary
+    attribute :content,    StringIO
     attribute :created_at, Time
 
     identity :uuid

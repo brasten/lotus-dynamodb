@@ -20,29 +20,31 @@ require 'minitest/autorun'
 $:.unshift 'lib'
 require 'lotus-dynamodb'
 
-if ENV['AWS']
-  AWS.config(
+if ENV['Aws']
+  Aws.config(
     # logger: Logger.new($stdout),
     # log_level: :debug,
-    access_key_id: ENV['AWS_KEY'],
-    secret_access_key: ENV['AWS_SECRET'],
+    access_key_id: ENV['Aws_KEY'],
+    secret_access_key: ENV['Aws_SECRET'],
   )
 else
-  AWS.config(
+  uri = URI("http://localhost:8000")
+
+  Aws.config.update(
     # logger: Logger.new($stdout),
     # log_level: :debug,
-    use_ssl: false,
-    dynamo_db_endpoint: 'localhost',
-    dynamo_db_port: 4567,
+    endpoint: uri.to_s,
+    region: 'us-east-1',
     access_key_id: '',
     secret_access_key: '',
   )
 
-  Net::HTTP.new('localhost', AWS.config.dynamo_db_port).delete('/')
+
+  Net::HTTP.new(uri.host, uri.port).delete('/')
 end
 
 def skip_for_fake_dynamo
-  skip('fake_dynamo does not support this yet') unless ENV['AWS']
+  skip('fake_dynamo does not support this yet') unless ENV['Aws']
 end
 
 require 'fixtures'

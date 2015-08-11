@@ -68,14 +68,14 @@ describe Lotus::Model::Adapters::Dynamodb::Coercer do
     end
 
     describe 'supported' do
-      describe 'AWS::DynamoDB::Binary' do
-        let(:subject) { AWS::DynamoDB::Binary.new("HUUUGE") }
+      describe 'StringIO' do
+        let(:subject) { StringIO.new("HUUUGE") }
 
         it 'coerces' do
-          @coercer.from_aws_dynamodb_binary(subject).class.must_equal \
-            AWS::DynamoDB::Binary
-          @coercer.from_aws_dynamodb_binary(subject).must_equal \
-            AWS::DynamoDB::Binary.new(subject)
+          @coercer.from_stringio(subject).class.must_equal \
+            StringIO
+          @coercer.from_stringio(subject).must_equal \
+            subject
         end
       end
 
@@ -172,14 +172,14 @@ describe Lotus::Model::Adapters::Dynamodb::Coercer do
     end
 
     describe 'supported' do
-      describe 'AWS::DynamoDB::Binary' do
-        let(:subject) { "HUUUGE" }
+      describe 'StringIO' do
+        let(:subject) { StringIO.new("HUUUGE") }
 
         it 'coerces' do
-          @coercer.to_aws_dynamodb_binary(subject).class.must_equal \
-            AWS::DynamoDB::Binary
-          @coercer.to_aws_dynamodb_binary(subject).must_equal \
-            AWS::DynamoDB::Binary.new(subject)
+          @coercer.to_stringio(subject).class.must_equal \
+            StringIO
+          @coercer.to_stringio(subject).must_equal \
+            subject
         end
       end
 

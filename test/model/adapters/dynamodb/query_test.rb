@@ -5,7 +5,7 @@ describe Lotus::Model::Adapters::Dynamodb::Query do
     MockResponse = Struct.new(:entities, :last_evaluated_key)
 
     class MockDataset
-      include AWS::DynamoDB::Types
+      include Aws::DynamoDB::Types
 
       attr_accessor :entities
       attr_accessor :records

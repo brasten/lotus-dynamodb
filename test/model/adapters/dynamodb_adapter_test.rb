@@ -14,6 +14,19 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
       include Lotus::Entity
     end
 
+    TestUserRepository = Class.new do
+      include Lotus::Repository
+    end
+
+    TestDeviceRepository = Class.new do
+      include Lotus::Repository
+    end
+
+    TestPurchaseRepository = Class.new do
+      include Lotus::Repository
+    end
+
+
     coercer = Lotus::Model::Adapters::Dynamodb::Coercer
     @mapper = Lotus::Model::Mapper.new(coercer) do
       collection :test_users do
@@ -40,7 +53,7 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
         attribute :region,     String
         attribute :subtotal,   Float
         attribute :item_ids,   Set
-        attribute :content,    AWS::DynamoDB::Binary
+        attribute :content,    IO
         attribute :created_at, Time
         attribute :updated_at, Time
 
@@ -56,6 +69,9 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
     Object.send(:remove_const, :TestUser)
     Object.send(:remove_const, :TestDevice)
     Object.send(:remove_const, :TestPurchase)
+    Object.send(:remove_const, :TestUserRepository)
+    Object.send(:remove_const, :TestDeviceRepository)
+    Object.send(:remove_const, :TestPurchaseRepository)
   end
 
   let(:collection) { :test_users }
@@ -330,7 +346,7 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
         region: 'europe',
         subtotal: 10.0,
         item_ids: ["2", "3", "4"],
-        content: AWS::DynamoDB::Binary.new("SO"),
+        content: StringIO.new("SO"),
         created_at: Time.new,
       )
     end
@@ -338,8 +354,8 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
       TestPurchase.new(
         region: 'usa',
         subtotal: 5.0,
-        item_ids: [AWS::DynamoDB::Binary.new("WOW")],
-        content: AWS::DynamoDB::Binary.new("MUCH"),
+        item_ids: [StringIO.new("WOW")],
+        content: StringIO.new("MUCH"),
         created_at: Time.new,
       )
     end
@@ -348,7 +364,7 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
         region: 'asia',
         subtotal: 100.0,
         item_ids: [4, 5, 6],
-        content: AWS::DynamoDB::Binary.new("CONTENT"),
+        content: StringIO.new("CONTENT"),
         created_at: Time.new,
       )
     end
@@ -382,13 +398,14 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
         @purchases.first.item_ids.class.must_equal Set
         @purchases.at(0).item_ids.map(&:class).must_equal [BigDecimal, BigDecimal, BigDecimal]
         @purchases.at(1).item_ids.map(&:class).must_equal [String, String, String]
-        @purchases.at(2).item_ids.map(&:class).must_equal [AWS::DynamoDB::Binary]
+        @purchases.at(2).item_ids.map(&:class).must_equal [StringIO]
       end
 
       it 'has binary type' do
-        @purchases.each do |purchase|
-          purchase.content.class.must_equal AWS::DynamoDB::Binary
-        end
+        @purchases.at(0).content.class.must_equal String
+        @purchases.at(1).content.class.must_equal StringIO
+        @purchases.at(2).content.class.must_equal StringIO
+        @purchases.at(3).content.class.must_equal StringIO
       end
     end
 
@@ -642,7 +659,7 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
 
         it 'can use "begins_with" method' do
           query = Proc.new {
-            where(region: 'asia').begins_with(content: "CON")
+            where(region: 'asia').begins_with(content: StringIO.new("CON"))
           }
 
           @adapter.query(collection, &query).count.must_equal 1

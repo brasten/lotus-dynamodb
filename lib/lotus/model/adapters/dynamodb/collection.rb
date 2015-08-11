@@ -6,12 +6,12 @@ module Lotus
   module Model
     module Adapters
       module Dynamodb
-        # Acts like table, using AWS::DynamoDB::Client.
+        # Acts like table, using Aws::DynamoDB::Client.
         #
         # @api private
         # @since 0.1.0
         class Collection
-          include AWS::DynamoDB::Types
+          include Aws::DynamoDB::Types
 
           # Response interface provides count and entities.
           #
@@ -41,7 +41,7 @@ module Lotus
 
           # Initialize a collection.
           #
-          # @param client [AWS::DynamoDB::Client] DynamoDB client
+          # @param client [Aws::DynamoDB::Client] DynamoDB client
           # @param coercer [Lotus::Model::Adapters::Dynamodb::Coercer]
           # @param name [Symbol] the name of the collection (eg. `:users`)
           # @param identity [Symbol] the primary key of the collection
@@ -60,7 +60,7 @@ module Lotus
           # @param entity [Object] the entity to persist
           #
           # @see Lotus::Model::Adapters::Dynamodb::Command#create
-          # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS/DynamoDB/Client/V20120810.html#put_item-instance_method
+          # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html#put_item-instance_method
           #
           # @return the primary key of the just created record.
           #
@@ -82,7 +82,7 @@ module Lotus
           # @param entity [Object] the entity to persist
           #
           # @see Lotus::Model::Adapters::Dynamodb::Command#update
-          # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS/DynamoDB/Client/V20120810.html#update_item-instance_method
+          # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html#update_item-instance_method
           #
           # @api private
           # @since 0.1.0
@@ -99,7 +99,7 @@ module Lotus
           # @param entity [Object] the entity to delete
           #
           # @see Lotus::Model::Adapters::Dynamodb::Command#delete
-          # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS/DynamoDB/Client/V20120810.html#delete_item-instance_method
+          # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html#delete_item-instance_method
           #
           # @api private
           # @since 0.1.0
@@ -116,7 +116,7 @@ module Lotus
           # @param key [Array] the identity of the object
           #
           # @see Lotus::Model::Adapters::Dynamodb::Command#get
-          # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS/DynamoDB/Client/V20120810.html#get_item-instance_method
+          # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html#get_item-instance_method
           #
           # @return [Hash] the serialized record
           #
@@ -136,10 +136,10 @@ module Lotus
 
           # Performs DynamoDB query operation.
           #
-          # @param options [Hash] AWS::DynamoDB::Client options
+          # @param options [Hash] Aws::DynamoDB::Client options
           # @param previous_response [Response] deserialized response from a previous operation
           #
-          # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS/DynamoDB/Client/V20120810.html#query-instance_method
+          # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html#query-instance_method
           #
           # @return [Array<Hash>] the serialized entities
           #
@@ -152,10 +152,10 @@ module Lotus
 
           # Performs DynamoDB scan operation.
           #
-          # @param options [Hash] AWS::DynamoDB::Client options
+          # @param options [Hash] Aws::DynamoDB::Client options
           # @param previous_response [Response] deserialized response from a previous operation
           #
-          # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS/DynamoDB/Client/V20120810.html#scan-instance_method
+          # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html#scan-instance_method
           #
           # @return [Array<Hash>] the serialized entities
           #
@@ -168,14 +168,14 @@ module Lotus
 
           # Fetches DynamoDB table schema.
           #
-          # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS/DynamoDB/Client/V20120810.html#describe_table-instance_method
+          # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html#describe_table-instance_method
           #
           # @return [Hash] table schema definition
           #
           # @api private
           # @since 0.1.0
           def schema
-            @schema ||= @client.describe_table(table_name: name).fetch(:table)
+            @schema ||= @client.describe_table(table_name: name).table
           end
 
           # Maps table key schema to hash with attribute name as key and key
@@ -226,7 +226,7 @@ module Lotus
           # @param column [String] the attribute column
           # @param value [Object] the attribute value
           #
-          # @see AWS::DynamoDB::Types
+          # @see Aws::DynamoDB::Types
           #
           # @return [Hash] the formatted attribute
           #
@@ -234,14 +234,15 @@ module Lotus
           # @since 0.1.0
           def format_attribute(column, value)
             value = @coercer.public_send(:"serialize_#{ column }", value)
-            format_attribute_value(value)
+            # format_attribute_value(value)
+            value
           end
 
           # Serialize given record to have proper attributes for 'item' query.
           #
           # @param record [Hash] the serialized record
           #
-          # @see AWS::DynamoDB::Types
+          # @see Aws::DynamoDB::Types
           #
           # @return [Hash] the serialized item
           #
@@ -249,7 +250,8 @@ module Lotus
           # @since 0.1.0
           def serialize_item(record)
             Hash[record.delete_if { |_, v| v.nil? }.map do |k, v|
-              [k.to_s, format_attribute_value(v)]
+              # [k.to_s, format_attribute_value(v)]
+              [k.to_s, v]
             end]
           end
 
@@ -258,7 +260,7 @@ module Lotus
           #
           # @param record [Hash,Array] the serialized record or primary key
           #
-          # @see AWS::DynamoDB::Types
+          # @see Aws::DynamoDB::Types
           #
           # @return [Hash] the serialized key
           #
@@ -275,7 +277,7 @@ module Lotus
           #
           # @param entity [Hash] the entity
           #
-          # @see AWS::DynamoDB::Types
+          # @see Aws::DynamoDB::Types
           #
           # @return [Hash] the serialized attributes
           #
@@ -287,7 +289,8 @@ module Lotus
               if v.nil?
                 [k.to_s, { action: "DELETE" }]
               else
-                [k.to_s, { value: format_attribute_value(v), action: "PUT" }]
+                # [k.to_s, { value: format_attribute_value(v), action: "PUT" }]
+                [k.to_s, { value: v, action: "PUT" }]
               end
             end]
           end
@@ -303,13 +306,13 @@ module Lotus
           # @since 0.1.0
           def deserialize_response(response, previous_response = nil)
             current_response = previous_response || Response.new
-            current_response.count += response[:count]
+            current_response.count += response.count
 
-            current_response.entities += response[:member].map do |item|
+            current_response.entities += response.items.map do |item|
               deserialize_item(item)
-            end if response[:member]
+            end if response.items
 
-            current_response.last_evaluated_key = response[:last_evaluated_key]
+            current_response.last_evaluated_key = response.last_evaluated_key
             current_response
           end
 
@@ -317,17 +320,63 @@ module Lotus
           #
           # @param item [Hash] the serialized item
           #
-          # @see AWS::DynamoDB::Types
+          # @see Aws::DynamoDB::Types
           #
           # @return [Hash] the deserialized record
           #
           # @api private
           # @since 0.1.0
           def deserialize_item(record)
-            Lotus::Utils::Hash.new(values_from_response_hash(record)).symbolize!
+            # Not entirely sure if removing "values_from_response_hash" has other
+            # side effects.
+            # Lotus::Utils::Hash.new(values_from_response_hash(record)).symbolize!
+
+            Lotus::Utils::Hash.new(record).symbolize!
           end
         end
       end
     end
   end
 end
+
+
+__END__
+
+Response V2:
+#<struct Aws::DynamoDB::Types::ScanOutput
+  items=[
+    {
+      "item_ids"=>#<Set: {#<BigDecimal:7f99519e96b0,'0.4E1',9(18)>, #<BigDecimal:7f99519e9570,'0.5E1',9(18)>, #<BigDecimal:7f99519e9430,'0.6E1',9(18)>}>,
+      "created_at"=>#<BigDecimal:7f99519e8e18,'0.1439301354 2148638E10',27(27)>,
+      "region"=>"asia",
+      "uuid"=>"17655a49-3cc3-44ce-b8da-c1f1022e7e5e",
+      "subtotal"=>#<BigDecimal:7f99519e8198,'0.1E3',9(18)>,
+      "content"=>#<StringIO:0x007f99519e3eb8>
+    }, {
+      "item_ids"=>#<Set: {#<StringIO:0x007f99519e3b70>}>,
+      "created_at"=>#<BigDecimal:7f99519e3828,'0.1439301354 214847E10',27(27)>,
+      "region"=>"usa",
+      "uuid"=>"1c089181-c95f-4078-a6b4-d73b011efe9e",
+      "subtotal"=>#<BigDecimal:7f99519e3350,'0.5E1',9(18)>,
+      "content"=>#<StringIO:0x007f99519e31c0>
+    }, {
+      "item_ids"=>#<Set: {#<BigDecimal:7f99519e2ec8,'0.1E1',9(18)>, #<BigDecimal:7f99519e2e78,'0.2E1',9(18)>, #<BigDecimal:7f99519e2d88,'0.3E1',9(18)>}>,
+      "created_at"=>#<BigDecimal:7f99519e2ab8,'0.1439301354 214824E10',27(27)>,
+      "region"=>"europe",
+      "uuid"=>"745dff90-b793-4306-80df-70eb4e62d753",
+      "subtotal"=>#<BigDecimal:7f99519e2658,'0.15E2',9(18)>,
+      "content"=>#<StringIO:0x007f99519e24a0>
+    }, {
+      "item_ids"=>#<Set: {"2", "3", "4"}>,
+      "created_at"=>#<BigDecimal:7f99519e1eb0,'0.1439301354 214839E10',27(27)>,
+      "region"=>"europe",
+      "uuid"=>"ff50fd2d-da07-494d-a310-fb4f4f35e806",
+      "subtotal"=>#<BigDecimal:7f99519e1938,'0.1E2',9(18)>,
+      "content"=>#<StringIO:0x007f99519e1500>
+    }
+  ],
+  count=4,
+  scanned_count=4,
+  last_evaluated_key=nil,
+  consumed_capacity=nil
+>
