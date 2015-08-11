@@ -84,7 +84,7 @@ module Lotus
             response = run
 
             while continue?(response)
-              @options[:exclusive_start_key] = response.last_evaluated_key
+              start_at response.last_evaluated_key
               response = run(response)
             end
 
@@ -105,7 +105,7 @@ module Lotus
             while continue?(response)
               response.entities = []
 
-              @options[:exclusive_start_key] = response.last_evaluated_key
+              start_at response.last_evaluated_key
               response = run(response)
 
               entities = @collection.deserialize(response.entities)
@@ -477,7 +477,7 @@ module Lotus
             response = run
 
             while continue?(response)
-              @options[:exclusive_start_key] = response.last_evaluated_key
+              start_at response.last_evaluated_key
               response = run(response)
             end
 
@@ -512,6 +512,14 @@ module Lotus
           def index(name)
             query
             @options[:index_name] = name.to_s
+            self
+          end
+
+          # Tells DynamoDB to start at a particular start key
+          #
+          def start_at(start_key)
+            # query
+            @options[:exclusive_start_key] = start_key
             self
           end
 
