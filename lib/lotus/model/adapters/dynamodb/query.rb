@@ -64,9 +64,10 @@ module Lotus
           #
           # @since 0.1.0
           # @api private
-          def initialize(dataset, collection, &blk)
+          def initialize(dataset, collection, context=nil, &blk)
             @dataset    = dataset
             @collection = collection
+            @context    = context
 
             @operation  = :scan
             @options    = {}
@@ -523,7 +524,37 @@ module Lotus
             self
           end
 
+          protected
+          # Handles missing methods for query combinations
+          #
+          # @api private
+          # @since 0.2.0
+          #
+          # @see Lotus::Model::Adapters:Sql::Query#apply
+          def method_missing(m, *args, &blk)
+            if @context.respond_to?(m)
+              apply @context.public_send(m, *args, &blk)
+            else
+              super
+            end
+          end
+
           private
+          # Returns a new query that is the result of the merge of the current
+          # conditions with the ones of the given query.
+          #
+          # This is used to combine queries together in a Repository.
+          #
+          # @see Lotus::Model::Adapters::Sql::Query#apply
+          #
+          # TODO: This is NOT extensively tested. Test as important use cases arise.
+          #
+          def apply(query)
+            dup.tap do |result|
+              result.options.merge!(query.options)
+            end
+          end
+
           # Return proper options key for a given condition.
           #
           # @param condition [Hash] the condition
