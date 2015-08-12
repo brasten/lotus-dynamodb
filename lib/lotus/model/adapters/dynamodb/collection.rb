@@ -18,10 +18,14 @@ module Lotus
           # @api private
           # @since 0.1.0
           class Response
-            attr_accessor :count, :entities, :last_evaluated_key
+            attr_accessor :count,
+                          :entities,
+                          :last_evaluated_key,
+                          :consumed_capacity
 
             def initialize
               @count = 0
+              @consumed_capacity = nil
               @entities = []
             end
           end
@@ -313,6 +317,7 @@ module Lotus
             end if response.items
 
             current_response.last_evaluated_key = response.last_evaluated_key
+            current_response.consumed_capacity  = response.consumed_capacity
             current_response
           end
 

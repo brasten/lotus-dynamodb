@@ -89,7 +89,12 @@ module Lotus
               response = run(response)
             end
 
-            @collection.deserialize(response.entities)
+            entities = @collection.deserialize(response.entities)
+
+            ResponseArray.new(entities).tap do |arr|
+              arr.last_evaluated_key = response.last_evaluated_key
+              arr.consumed_capacity  = response.consumed_capacity
+            end
           end
 
           # Iterates over fetched records.

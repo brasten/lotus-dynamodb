@@ -5,6 +5,7 @@ require 'lotus/model/adapters/dynamodb/coercer'
 require 'lotus/model/adapters/dynamodb/collection'
 require 'lotus/model/adapters/dynamodb/command'
 require 'lotus/model/adapters/dynamodb/query'
+require 'lotus/model/adapters/dynamodb/response_array'
 
 module Lotus
   module Model
