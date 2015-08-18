@@ -93,7 +93,7 @@ module Lotus
 
             ResponseArray.new(entities).tap do |arr|
               arr.last_evaluated_key = response.last_evaluated_key
-              arr.consumed_capacity  = response.consumed_capacity
+              arr.consumed_capacity  = response.consumed_capacity if response.respond_to?(:consumed_capacity)
             end
           end
 
