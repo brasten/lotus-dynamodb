@@ -16,5 +16,5 @@ gem 'benchmark-ips', '~> 2.0'
 gem 'fake_dynamo', github: 'krasnoukhov/fake_dynamo'
 
 # Upstream
-gem 'lotus-utils', github: 'lotus/utils'
-gem 'lotus-model', github: 'lotus/model'
+gem 'lotus-utils'
+gem 'lotus-model', '0.4.1'
