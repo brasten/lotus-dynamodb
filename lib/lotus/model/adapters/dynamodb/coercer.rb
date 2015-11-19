@@ -10,8 +10,8 @@ module Lotus
         # @api private
         # @since 0.1.0
         class Coercer < Lotus::Model::Mapping::Coercer
-          SKIPPED_KLASSES = [Float, Integer, Set, String, IO, StringIO]
-          SUPPORTED_KLASSES = [Array, Boolean, Date, DateTime, Hash, Time]
+          SKIPPED_KLASSES = [Float, Integer, Set, String, IO, StringIO, Hash, Array]
+          SUPPORTED_KLASSES = [Boolean, Date, DateTime, Time]
 
           # Converts value from given type to DynamoDB record value.
           #
