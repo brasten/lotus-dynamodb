@@ -389,10 +389,21 @@ module Lotus
                   deserialize_item(item)
                 end unless response.responses.empty?
 
-            current_response.unprocessed_keys   = response.unprocessed_keys
+            current_response.unprocessed_keys   = unprocessed_keys(response.unprocessed_keys)
             current_response.consumed_capacity  = response.consumed_capacity
             current_response
           end
+
+          def unprocessed_keys(unprocessed_keys)
+            return [] if unprocessed_keys.blank?
+
+            unprocessed_keys
+              .map(&:values)
+              .map(&:keys)
+              .flatten
+              .map(&:values)
+          end
+
 
           # Deserialize item from DynamoDB response.
           #

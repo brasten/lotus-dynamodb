@@ -118,10 +118,11 @@ module Lotus
         # @api private
         # @since 0.2.0
         def batch_find(collection_name, keys)
-          response = _collection(collection_name).batch_get(keys)
+          response = nil
 
-          while continue?(response)
-            response = _collection(collection_name).batch_get(response.unprocessed_keys, previous_response: response)
+          while !keys.blank?
+            response = _collection(collection_name).batch_get(keys, previous_response: response)
+            keys = response.unprocessed_keys
           end
 
           entities = _mapped_collection(collection_name).deserialize(response.entities)
