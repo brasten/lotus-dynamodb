@@ -27,11 +27,7 @@ module Lotus
           def from_array(value)
             return if value.nil?
 
-            if value.kind_of?(Array)
-              value
-            else
-              _deserialize(value)
-            end
+            value.kind_of?(String) ? _deserialize(value) : value
           end
 
           # Converts value from DynamoDB record value to given type.
@@ -41,11 +37,7 @@ module Lotus
           def to_array(value)
             return if value.nil?
 
-            if value.kind_of?(Array)
-              value
-            else
-              _deserialize(value)
-            end
+            value.kind_of?(String) ? _deserialize(value) : value
           end
 
           # Converts value from given type to DynamoDB record value.
@@ -130,11 +122,7 @@ module Lotus
           def from_hash(value)
             return if value.nil?
 
-            if value.kind_of?(Hash)
-              value
-            else
-              _deserialize(value)
-            end
+            value.kind_of?(String) ? _deserialize(value) : value
           end
 
           # Converts value from DynamoDB record value to given type.
@@ -144,11 +132,7 @@ module Lotus
           def to_hash(value)
             return if value.nil?
 
-            if value.kind_of?(Hash)
-              value
-            else
-              _deserialize(value)
-            end
+            value.kind_of?(String) ? _deserialize(value) : value
           end
 
           # Converts value from given type to DynamoDB record value.
