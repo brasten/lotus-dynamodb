@@ -83,8 +83,8 @@ describe Lotus::Model::Adapters::Dynamodb::Coercer do
         let(:subject) { ["omg"] }
 
         it 'coerces' do
-          @coercer.from_array(subject).class.must_equal String
-          @coercer.from_array(subject).must_equal MultiJson.dump(subject)
+          @coercer.from_array(subject).class.must_equal Array
+          @coercer.from_array(subject).must_equal subject
         end
       end
 
@@ -119,8 +119,8 @@ describe Lotus::Model::Adapters::Dynamodb::Coercer do
         let(:subject) { { omg: "lol" } }
 
         it 'coerces' do
-          @coercer.from_hash(subject).class.must_equal String
-          @coercer.from_hash(subject).must_equal MultiJson.dump(subject)
+          @coercer.from_hash(subject).class.must_equal Hash
+          @coercer.from_hash(subject).must_equal subject
         end
       end
 
@@ -184,11 +184,17 @@ describe Lotus::Model::Adapters::Dynamodb::Coercer do
       end
 
       describe 'Array' do
-        let(:subject) { MultiJson.dump(["omg"]) }
+        let(:subject_as_string) { MultiJson.dump(subject_as_array) }
+        let(:subject_as_array) { ["omg"] }
 
-        it 'coerces' do
-          @coercer.to_array(subject).class.must_equal Array
-          @coercer.to_array(subject).must_equal MultiJson.load(subject)
+        it 'coerces String' do
+          @coercer.to_array(subject_as_string).class.must_equal Array
+          @coercer.to_array(subject_as_string).must_equal MultiJson.load(subject_as_string)
+        end
+
+        it 'coerces Array' do
+          @coercer.to_array(subject_as_array).class.must_equal Array
+          @coercer.to_array(subject_as_array).must_equal subject_as_array
         end
       end
 
@@ -222,9 +228,14 @@ describe Lotus::Model::Adapters::Dynamodb::Coercer do
       describe 'Hash' do
         let(:subject) { MultiJson.dump({ omg: "lol" }) }
 
-        it 'coerces' do
+        it 'coerces from String' do
           @coercer.to_hash(subject).class.must_equal Hash
           @coercer.to_hash(subject).must_equal MultiJson.load(subject)
+        end
+
+        it 'coerces from Hash' do
+          @coercer.to_hash({ "omg" => "lol" }).class.must_equal(Hash)
+          @coercer.to_hash({ "omg" => "lol" }).must_equal({"omg" => "lol"})
         end
       end
 

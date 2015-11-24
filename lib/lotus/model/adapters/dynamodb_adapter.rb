@@ -107,6 +107,31 @@ module Lotus
           command(collection).get(key)
         end
 
+        # Returns an array of unique records from the given collection, with the given
+        # ids.
+        #
+        # @param collection [Symbol] the target collection (it must be mapped)
+        # @param keys [Array<Array>] an array of identities
+        #
+        # @return [Array<Object>] the entities
+        #
+        # @api private
+        # @since 0.2.0
+        def batch_find(collection_name, keys)
+          response = _collection(collection_name).batch_get(keys)
+
+          while continue?(response)
+            response = _collection(collection_name).batch_get(response.unprocessed_keys, previous_response: response)
+          end
+
+          entities = _mapped_collection(collection_name).deserialize(response.entities)
+
+          Dynamodb::ResponseArray.new(entities).tap do |arr|
+            arr.unprocessed_keys    = response.unprocessed_keys if response.respond_to?(:unprocessed_keys)
+            arr.consumed_capacity   = response.consumed_capacity if response.respond_to?(:consumed_capacity)
+          end
+        end
+
         # This method is not implemented. DynamoDB does not allow
         # table-wide sorting.
         #
@@ -185,6 +210,23 @@ module Lotus
             name,
             _identity(name),
           )
+        end
+
+
+        private
+
+        # Check if request needs to be continued.
+        #
+        # @param previous_response [BatchResponse] deserialized response from a previous operation
+        #
+        # @return [Boolean]
+        #
+        # @api private
+        # @since 0.2.0
+        def continue?(previous_response)
+          return false unless previous_response.unprocessed_keys
+
+          true
         end
       end
     end

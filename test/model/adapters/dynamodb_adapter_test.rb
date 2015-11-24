@@ -317,6 +317,39 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
     end
   end
 
+  describe '#batch_find' do
+    before do
+      @adapter.create(collection, entity_one)
+      @adapter.create(collection, entity_two)
+      @adapter.create(collection, entity_three)
+      @adapter.create(collection, entity_four)
+    end
+
+    describe 'simple key' do
+      let(:entity_one)    { TestUser.new }
+      let(:entity_two)    { TestUser.new }
+      let(:entity_three)  { TestUser.new }
+      let(:entity_four)   { TestUser.new }
+
+      it 'returns the records by ids' do
+        @adapter.batch_find(collection, [entity_one.id, entity_three.id]).must_equal [entity_one, entity_three]
+      end
+
+      it 'returns only the available records when some cannot be found' do
+        @adapter.batch_find(collection, [entity_one.id, "BLAAAAAH"]).must_equal [entity_one]
+      end
+
+      it 'returns empty response when the given id is nil' do
+        @adapter.batch_find(collection, [nil]).must_equal []
+      end
+
+      it 'returns nil when the given id is empty string' do
+        @adapter.batch_find(collection, [""]).must_equal []
+      end
+    end
+
+  end
+
   describe '#clear' do
     before do
       @adapter.create(collection, entity)

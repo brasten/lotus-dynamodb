@@ -30,6 +30,23 @@ module Lotus
             end
           end
 
+          # BatchResponse interface provides entities and unprocessed items
+          #
+          # @api private
+          # @since 0.2.0
+          #
+          class BatchResponse
+            attr_accessor :entities,
+                          :unprocessed_keys,
+                          :consumed_capacity
+
+            def initialize
+              @consumed_capacity = nil
+              @unprocessed_keys = nil
+              @entities = []
+            end
+          end
+
           # @attr_reader name [String] the name of the collection (eg. `users`)
           #
           # @since 0.1.0
@@ -137,6 +154,37 @@ module Lotus
 
             deserialize_item(response[:item]) if response[:item]
           end
+
+          # Returns an unique record from the given collection, with the given
+          # id.
+          #
+          # @param keys [Array<Array>] identities
+          #
+          # @see Lotus::Model::Adapters::Dynamodb::Command#get
+          # @see http://docs.aws.amazon.com/AwsRubySDK/latest/Aws/DynamoDB/Client/V20120810.html#get_item-instance_method
+          #
+          # @return [Array<Hash>] the serialized recordds
+          #
+          # @api private
+          # @since 0.2.0
+          def batch_get(keys, previous_response: nil)
+            keys = keys.map { |k| [k].flatten }.uniq # ensure Array<Array>
+            key_schema_count = key_schema.count
+
+            return BatchResponse.new if keys.flatten.any? { |v| v.to_s == "" }
+            return BatchResponse.new if keys.any? { |v| v.count != key_schema_count }
+
+            response = @client.batch_get_item(
+              request_items: {
+                name => {
+                  keys: keys.map(&method(:serialize_key))
+                }
+              }
+            )
+
+            deserialize_batch_response(response, previous_response: previous_response)
+          end
+
 
           # Performs DynamoDB query operation.
           #
@@ -317,6 +365,31 @@ module Lotus
             end if response.items
 
             current_response.last_evaluated_key = response.last_evaluated_key
+            current_response.consumed_capacity  = response.consumed_capacity
+            current_response
+          end
+
+          # Deserialize DynamoDB batch_get_item response.
+          #
+          # @param response [Hash] the serialized response
+          # @param previous_response [BatchResponse] deserialized response from a previous operation
+          #
+          # @return [BatchResponse] the deserialized response
+          #
+          # @api private
+          # @since 0.1.0
+          def deserialize_batch_response(response, previous_response: nil)
+            current_response = previous_response || BatchResponse.new
+
+            current_response.entities += response
+                .responses
+                .values
+                .flatten
+                .map do |item|
+                  deserialize_item(item)
+                end unless response.responses.empty?
+
+            current_response.unprocessed_keys   = response.unprocessed_keys
             current_response.consumed_capacity  = response.consumed_capacity
             current_response
           end

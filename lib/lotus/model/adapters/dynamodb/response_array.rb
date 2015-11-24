@@ -10,7 +10,8 @@ module Lotus::Model::Adapters
       attr_accessor :consumed_capacity
       attr_accessor :scanned_count
       attr_accessor :last_evaluated_key
-      
+      attr_accessor :unprocessed_keys
+
 
     end
   end

@@ -10,8 +10,15 @@ module Lotus
         # @api private
         # @since 0.1.0
         class Coercer < Lotus::Model::Mapping::Coercer
-          SKIPPED_KLASSES = [Float, Integer, Set, String, IO, StringIO, Hash, Array]
-          SUPPORTED_KLASSES = [Boolean, Date, DateTime, Time]
+          SKIPPED_KLASSES = [Float, Integer, Set, String, IO, StringIO]
+          SUPPORTED_KLASSES = [Boolean, Date, DateTime, Time, Hash, Array]
+
+          # NOTE: Array and Hash --
+          #       These are now supported natively by DynamoDB. Still, it's possible
+          #       that there are Hash/Array fields that have been persisted as serialized
+          #       versions. Therefore, the coercer accepts serialized representations from
+          #       DynamoDB, but always attempts to save back as a native Hash/Array.
+          #
 
           # Converts value from given type to DynamoDB record value.
           #
@@ -19,7 +26,12 @@ module Lotus
           # @since 0.1.0
           def from_array(value)
             return if value.nil?
-            _serialize(value)
+
+            if value.kind_of?(Array)
+              value
+            else
+              _deserialize(value)
+            end
           end
 
           # Converts value from DynamoDB record value to given type.
@@ -28,7 +40,12 @@ module Lotus
           # @since 0.1.0
           def to_array(value)
             return if value.nil?
-            _deserialize(value)
+
+            if value.kind_of?(Array)
+              value
+            else
+              _deserialize(value)
+            end
           end
 
           # Converts value from given type to DynamoDB record value.
@@ -112,7 +129,12 @@ module Lotus
           # @since 0.1.0
           def from_hash(value)
             return if value.nil?
-            _serialize(value)
+
+            if value.kind_of?(Hash)
+              value
+            else
+              _deserialize(value)
+            end
           end
 
           # Converts value from DynamoDB record value to given type.
@@ -121,7 +143,12 @@ module Lotus
           # @since 0.1.0
           def to_hash(value)
             return if value.nil?
-            _deserialize(value)
+
+            if value.kind_of?(Hash)
+              value
+            else
+              _deserialize(value)
+            end
           end
 
           # Converts value from given type to DynamoDB record value.
