@@ -120,7 +120,7 @@ module Lotus
         def batch_find(collection_name, keys)
           response = nil
 
-          while !keys.blank?
+          while (keys && !keys.empty?)
             response = _collection(collection_name).batch_get(keys, previous_response: response)
             keys = response.unprocessed_keys
           end

@@ -122,7 +122,9 @@ module Lotus
           def from_hash(value)
             return if value.nil?
 
-            value.kind_of?(String) ? _deserialize(value) : value
+            v = value.kind_of?(String) ? _deserialize(value) : value
+
+            v.respond_to?(:with_indifferent_access) ? v.with_indifferent_access : v
           end
 
           # Converts value from DynamoDB record value to given type.
@@ -132,7 +134,9 @@ module Lotus
           def to_hash(value)
             return if value.nil?
 
-            value.kind_of?(String) ? _deserialize(value) : value
+            v = value.kind_of?(String) ? _deserialize(value) : value
+
+            v.respond_to?(:with_indifferent_access) ? v.with_indifferent_access : v
           end
 
           # Converts value from given type to DynamoDB record value.

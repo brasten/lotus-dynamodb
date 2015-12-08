@@ -395,7 +395,7 @@ module Lotus
           end
 
           def unprocessed_keys(unprocessed_keys)
-            return [] if unprocessed_keys.blank?
+            return [] if unprocessed_keys.nil? || unprocessed_keys.empty?
 
             unprocessed_keys
               .map(&:values)

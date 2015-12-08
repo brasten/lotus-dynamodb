@@ -116,11 +116,12 @@ describe Lotus::Model::Adapters::Dynamodb::Coercer do
       end
 
       describe 'Hash' do
-        let(:subject) { { omg: "lol" } }
+        let(:subject) { { "omg": "lol" } }
 
         it 'coerces' do
           @coercer.from_hash(subject).class.must_equal Hash
           @coercer.from_hash(subject).must_equal subject
+          @coercer.from_hash(subject)[:omg].must_equal "lol"
         end
       end
 
