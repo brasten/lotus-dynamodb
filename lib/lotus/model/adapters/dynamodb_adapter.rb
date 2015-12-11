@@ -125,7 +125,7 @@ module Lotus
             keys = response.unprocessed_keys
           end
 
-          entities = _mapped_collection(collection_name).deserialize(response.entities)
+          entities = _mapped_collection(collection_name).deserialize(response.try(:entities) || [])
 
           Dynamodb::ResponseArray.new(entities).tap do |arr|
             arr.unprocessed_keys    = response.unprocessed_keys if response.respond_to?(:unprocessed_keys)
