@@ -436,7 +436,7 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
       end
 
       it 'has binary type' do
-        @purchases.at(0).content.class.must_equal String
+        @purchases.at(0).content.class.must_equal StringIO
         @purchases.at(1).content.class.must_equal StringIO
         @purchases.at(2).content.class.must_equal StringIO
         @purchases.at(3).content.class.must_equal StringIO

@@ -346,7 +346,9 @@ module Lotus
           # @since 0.2.1
           #
           def _serialize_attribute_value(key, value)
-            @mapped_collection.attributes[key.to_sym].__send__(:coercer).dump(value)
+            attr = @mapped_collection.attributes[key.to_sym]
+
+            attr ? attr.__send__(:coercer).dump(value) : value
           end
 
           # Deserialize DynamoDB scan/query response.

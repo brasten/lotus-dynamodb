@@ -13,7 +13,8 @@ module Lotus
         def self.load(value)
           return if value.nil?
 
-          StringIO.new(value)
+          value.kind_of?(StringIO) || value.kind_of?(IO) ?
+            value : StringIO.new(value)
         end
       end
 
