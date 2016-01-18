@@ -1,4 +1,5 @@
 require 'test_helper'
+include Lotus::Dynamodb::Coercers
 
 describe Lotus::Model::Adapters::DynamodbAdapter do
   before do
@@ -27,8 +28,8 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
     end
 
 
-    coercer = Lotus::Model::Adapters::Dynamodb::Coercer
-    @mapper = Lotus::Model::Mapper.new(coercer) do
+    # coercer = Lotus::Model::Adapters::Dynamodb::Coercer
+    @mapper = Lotus::Model::Mapper.new() do
       collection :test_users do
         entity TestUser
 
@@ -41,7 +42,7 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
         entity TestDevice
 
         attribute :id,         String, as: :uuid
-        attribute :created_at, Time
+        attribute :created_at, Lotus::Dynamodb::Coercers::Time
 
         identity :uuid
       end
@@ -53,9 +54,9 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
         attribute :region,     String
         attribute :subtotal,   Float
         attribute :item_ids,   Set
-        attribute :content,    IO
-        attribute :created_at, Time
-        attribute :updated_at, Time
+        attribute :content,    Lotus::Dynamodb::Coercers::IO
+        attribute :created_at, Lotus::Dynamodb::Coercers::Time
+        attribute :updated_at, Lotus::Dynamodb::Coercers::Time
 
         identity :uuid
       end

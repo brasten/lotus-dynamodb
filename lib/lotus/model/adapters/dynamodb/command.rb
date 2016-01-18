@@ -13,14 +13,14 @@ module Lotus
           # Initialize a command.
           #
           # @param dataset [Lotus::Model::Adapters::Dynamodb::Collection]
-          # @param collection [Lotus::Model::Mapping::Collection]
+          # @param mapped_collection [Lotus::Model::Mapping::Collection]
           #
           # @return [Lotus::Model::Adapters::Dynamodb::Command]
           #
           # @api private
           # @since 0.1.0
-          def initialize(dataset, collection)
-            @dataset, @collection = dataset, collection
+          def initialize(dataset, mapped_collection)
+            @dataset, @mapped_collection = dataset, mapped_collection
           end
 
           # Creates a record for the given entity.
@@ -79,7 +79,7 @@ module Lotus
           # @api private
           # @since 0.1.0
           def get(key)
-            @collection.deserialize(
+            @mapped_collection.deserialize(
               [@dataset.get(key)].compact
             ).first
           end
@@ -94,7 +94,7 @@ module Lotus
           # @api private
           # @since 0.1.0
           def _serialize(entity)
-            @collection.serialize(entity)
+            @mapped_collection.serialize(entity)
           end
         end
       end

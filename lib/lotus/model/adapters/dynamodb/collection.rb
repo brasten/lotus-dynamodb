@@ -62,18 +62,26 @@ module Lotus
 
           # Initialize a collection.
           #
+          # TODO: Update comments
+          #
           # @param client [Aws::DynamoDB::Client] DynamoDB client
-          # @param coercer [Lotus::Model::Adapters::Dynamodb::Coercer]
-          # @param name [Symbol] the name of the collection (eg. `:users`)
-          # @param identity [Symbol] the primary key of the collection
+          # @param mapped_collection [Colection] the mapped collection
           #   (eg. `:id`).
           #
           # @api private
           # @since 0.1.0
-          def initialize(client, coercer, name, identity)
-            @client, @coercer = client, coercer
-            @name, @identity = name.to_s, identity
-            @key_schema = {}
+          def initialize(client, mapped_collection)
+            @client             = client
+            @mapped_collection  = mapped_collection
+            @key_schema         = {}
+          end
+
+          def name
+            @mapped_collection.name.to_s
+          end
+
+          def identity
+            @mapped_collection.identity
           end
 
           # Creates a record for the given entity and returns a primary key.
@@ -198,6 +206,8 @@ module Lotus
           # @api private
           # @since 0.1.0
           def query(options = {}, previous_response = nil)
+            # puts "Collection#query"
+            # pp options
             response = @client.query(options.merge(table_name: name))
             deserialize_response(response, previous_response)
           end
@@ -273,23 +283,6 @@ module Lotus
             key_schema(index).has_key?(column)
           end
 
-          # Coerce and format attribute value to match DynamoDB type.
-          #
-          # @param column [String] the attribute column
-          # @param value [Object] the attribute value
-          #
-          # @see Aws::DynamoDB::Types
-          #
-          # @return [Hash] the formatted attribute
-          #
-          # @api private
-          # @since 0.1.0
-          def format_attribute(column, value)
-            value = @coercer.public_send(:"serialize_#{ column }", value)
-            # format_attribute_value(value)
-            value
-          end
-
           # Serialize given record to have proper attributes for 'item' query.
           #
           # @param record [Hash] the serialized record
@@ -302,8 +295,7 @@ module Lotus
           # @since 0.1.0
           def serialize_item(record)
             Hash[record.delete_if { |_, v| v.nil? }.map do |k, v|
-              # [k.to_s, format_attribute_value(v)]
-              [k.to_s, v]
+              [k.to_s, _serialize_attribute_value(k, v)]
             end]
           end
 
@@ -321,7 +313,7 @@ module Lotus
           def serialize_key(record)
             Hash[key_schema.keys.each_with_index.map do |k, idx|
               v = record.is_a?(Hash) ? record[k] : record[idx]
-              [k.to_s, format_attribute(k, v)]
+              [k.to_s, _serialize_attribute_value(k, v)]
             end]
           end
 
@@ -341,10 +333,20 @@ module Lotus
               if v.nil?
                 [k.to_s, { action: "DELETE" }]
               else
-                # [k.to_s, { value: format_attribute_value(v), action: "PUT" }]
-                [k.to_s, { value: v, action: "PUT" }]
+                [k.to_s, { value: _serialize_attribute_value(k, v), action: "PUT" }]
               end
             end]
+          end
+
+          # Serialize a given attribute
+          #
+          # @param key [String,Symbol]
+          #
+          # @api private
+          # @since 0.2.1
+          #
+          def _serialize_attribute_value(key, value)
+            @mapped_collection.attributes[key.to_sym].__send__(:coercer).dump(value)
           end
 
           # Deserialize DynamoDB scan/query response.

@@ -1,7 +1,7 @@
 require 'aws-sdk'
 require 'lotus/model/adapters/abstract'
 require 'lotus/model/adapters/implementation'
-require 'lotus/model/adapters/dynamodb/coercer'
+require 'lotus/dynamodb/coercers'
 require 'lotus/model/adapters/dynamodb/collection'
 require 'lotus/model/adapters/dynamodb/command'
 require 'lotus/model/adapters/dynamodb/query'
@@ -207,9 +207,7 @@ module Lotus
         def _collection(name)
           @collections[name] ||= Dynamodb::Collection.new(
             @client,
-            Lotus::Model::Adapters::Dynamodb::Coercer.new(_mapped_collection(name)),
-            name,
-            _identity(name),
+            _mapped_collection(name)
           )
         end
 

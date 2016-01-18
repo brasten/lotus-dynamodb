@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'bundler/setup'
+require 'pp'
 
 if ENV['COVERAGE'] == 'true'
   require 'simplecov'
@@ -30,9 +31,10 @@ if ENV['Aws']
 else
   uri = URI("http://localhost:8000")
 
+  FileUtils.mkdir_p('log')
   Aws.config.update(
-    # logger: Logger.new($stdout),
-    # log_level: :debug,
+    logger: Logger.new('log/test.log'),
+    log_level: :debug,
     endpoint: uri.to_s,
     region: 'us-east-1',
     access_key_id: '',

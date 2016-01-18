@@ -64,10 +64,10 @@ module Lotus
           #
           # @since 0.1.0
           # @api private
-          def initialize(dataset, collection, context=nil, &blk)
-            @dataset    = dataset
-            @collection = collection
-            @context    = context
+          def initialize(dataset, mapped_collection, context=nil, &blk)
+            @dataset           = dataset
+            @mapped_collection = mapped_collection
+            @context           = context
 
             @operation  = :scan
             @options    = {}
@@ -89,7 +89,7 @@ module Lotus
               response = run(response)
             end
 
-            entities = @collection.deserialize(response.entities)
+            entities = @mapped_collection.deserialize(response.entities)
 
             ResponseArray.new(entities).tap do |arr|
               arr.last_evaluated_key = response.last_evaluated_key
@@ -105,7 +105,7 @@ module Lotus
           def each
             response = run
 
-            entities = @collection.deserialize(response.entities)
+            entities = @mapped_collection.deserialize(response.entities)
             entities.each { |x| yield(x) }
 
             while continue?(response)
@@ -114,7 +114,7 @@ module Lotus
               start_at response.last_evaluated_key
               response = run(response)
 
-              entities = @collection.deserialize(response.entities)
+              entities = @mapped_collection.deserialize(response.entities)
               entities.each { |x| yield(x) }
             end
 
@@ -617,15 +617,25 @@ module Lotus
             }
 
             if !["NULL", "NOT_NULL"].include?(operator)
-              serialized[column.to_s][:attribute_value_list] = values.map do |v|
-                @dataset.format_attribute(column, v)
-              end
+              serialized[column.to_s][:attribute_value_list] = values.map { |v|
+                if v.kind_of?(Time)
+                  Lotus::Dynamodb::Coercers::Time.dump(v)
+                elsif v.kind_of?(Date)
+                  Lotus::Dynamodb::Coercers::Date.dump(v)
+                elsif v.kind_of?(DateTime)
+                  Lotus::Dynamodb::Coercers::DateTime.dump(v)
+                elsif v.kind_of?(Boolean)
+                  Lotus::Dynamodb::Coercers::Boolean.dump(v)
+                else
+                  v
+                end
+              }
             end
 
             serialized
           end
 
-          # Apply all the options and return a filtered collection.
+          # Apply all the options and return a filtered mapped_collection.
           #
           # @param previous_response [Response] deserialized response from a previous operation
           #
