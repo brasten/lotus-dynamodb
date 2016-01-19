@@ -66,7 +66,7 @@ module Lotus
         def self.dump(value)
           return nil if value.nil?
 
-          value.to_time.to_f
+          value.is_a?(Float) ? value : value.to_time.to_f
         end
 
         def self.load(value)
