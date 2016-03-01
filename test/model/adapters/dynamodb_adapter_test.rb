@@ -3,7 +3,7 @@ include Lotus::Dynamodb::Coercers
 
 describe Lotus::Model::Adapters::DynamodbAdapter do
   before do
-    TestUser = Struct.new(:id, :name, :age) do
+    TestUser = Struct.new(:id, :name, :age, :active) do
       include Lotus::Entity
     end
 
@@ -14,6 +14,11 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
     TestPurchase = Struct.new(:id, :region, :subtotal, :item_ids, :content, :created_at, :updated_at) do
       include Lotus::Entity
     end
+
+    TestSettings = Struct.new(:id, :name, :settings, :tags) do
+      include Lotus::Entity
+    end
+
 
     TestUserRepository = Class.new do
       include Lotus::Repository
@@ -27,6 +32,10 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
       include Lotus::Repository
     end
 
+    TestSettingsRepository = Class.new do
+      include Lotus::Repository
+    end
+
 
     # coercer = Lotus::Model::Adapters::Dynamodb::Coercer
     @mapper = Lotus::Model::Mapper.new() do
@@ -36,6 +45,7 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
         attribute :id,   String
         attribute :name, String
         attribute :age,  Integer
+        attribute :active, Boolean
       end
 
       collection :test_devices do
@@ -60,6 +70,16 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
 
         identity :uuid
       end
+
+      collection :test_settings do
+        entity TestSettings
+
+        attribute :id,   String
+        attribute :name, String
+        attribute :settings, Hash
+        attribute :tags, Array
+      end
+
     end.load!
 
     @adapter = Lotus::Model::Adapters::DynamodbAdapter.new(@mapper)
@@ -70,9 +90,11 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
     Object.send(:remove_const, :TestUser)
     Object.send(:remove_const, :TestDevice)
     Object.send(:remove_const, :TestPurchase)
+    Object.send(:remove_const, :TestSettings)
     Object.send(:remove_const, :TestUserRepository)
     Object.send(:remove_const, :TestDeviceRepository)
     Object.send(:remove_const, :TestPurchaseRepository)
+    Object.send(:remove_const, :TestSettingsRepository)
   end
 
   let(:collection) { :test_users }
@@ -165,17 +187,22 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
     before do
       @adapter.create(collection, entity)
     end
-
-    let(:entity) { TestUser.new(id: nil, name: 'L') }
+    let(:collection) { :test_settings }
+    let(:entity) { TestSettings.new(id: nil, name: "Testing!", settings: { one: 1, two: 2 }) }
 
     it 'stores the changes and leave the id untouched' do
       id = entity.id
 
       entity.name = 'MG'
+      entity.settings = { three: 3 }
+
       @adapter.update(collection, entity)
 
       entity.id.must_equal id
-      @adapter.find(collection, entity.id).must_equal entity
+      persisted = @adapter.find(collection, entity.id)
+      persisted.id.must_equal entity.id
+      persisted.name.must_equal "MG"
+      persisted.settings.must_equal({three: 3})
     end
 
     it 'removes attribute' do
@@ -333,7 +360,10 @@ describe Lotus::Model::Adapters::DynamodbAdapter do
       let(:entity_four)   { TestUser.new }
 
       it 'returns the records by ids' do
-        @adapter.batch_find(collection, [entity_one.id, entity_three.id]).must_equal [entity_one, entity_three]
+        results = @adapter.batch_find(collection, [entity_one.id, entity_three.id])
+        results.size.must_equal 2
+        results.first.must_equal entity_one
+        results.last.must_equal entity_three
       end
 
       it 'returns only the available records when some cannot be found' do

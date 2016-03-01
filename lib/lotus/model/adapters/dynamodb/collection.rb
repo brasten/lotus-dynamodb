@@ -1,4 +1,4 @@
-require 'securerandom'
+require 'uuid'
 require 'aws-sdk'
 require 'lotus/utils/hash'
 
@@ -96,7 +96,7 @@ module Lotus
           # @api private
           # @since 0.1.0
           def create(entity)
-            entity[identity] ||= SecureRandom.uuid
+            entity[identity] ||= UUID.generate
 
             @client.put_item(
               table_name: name,

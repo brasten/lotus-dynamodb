@@ -50,7 +50,7 @@ List of Ruby types that are supported:
 
 * StringIO – ```B```
 * Array – ```S``` (via MultiJson)
-* Boolean – ```N``` (1 for true and 0 for false)
+* Boolean – ```BOOL``` (1 for true and 0 for false)
 * Date – ```N``` (Integer, seconds since Epoch)
 * DateTime – ```N``` (Float, seconds since Epoch)
 * Float – ```N```

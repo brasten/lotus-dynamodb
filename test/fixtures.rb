@@ -14,7 +14,10 @@ begin
       write_capacity_units: 50,
     },
   )
+rescue StandardError
+end
 
+begin
   DB.create_table(
     table_name: "test_devices",
     attribute_definitions: [
@@ -30,7 +33,10 @@ begin
       write_capacity_units: 50,
     },
   )
+rescue StandardError
+end
 
+begin
   DB.create_table(
     table_name: "test_purchases",
     attribute_definitions: [
@@ -71,5 +77,22 @@ begin
       write_capacity_units: 50,
     },
   )
-rescue Aws::DynamoDB::Errors::ResourceInUseException
+rescue StandardError
+end
+
+begin
+  DB.create_table(
+    table_name: "test_settings",
+    attribute_definitions: [
+      { attribute_name: "id", attribute_type: "S" },
+    ],
+    key_schema: [
+      { attribute_name: "id", key_type: "HASH" },
+    ],
+    provisioned_throughput: {
+      read_capacity_units: 50,
+      write_capacity_units: 50,
+    },
+  )
+rescue StandardError
 end

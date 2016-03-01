@@ -18,19 +18,19 @@ module Lotus
         end
       end
 
-      class Boolean < Lotus::Model::Coercer
-        def self.dump(value)
-          return if value.nil?
-
-          value ? 1 : 0
-        end
-
-        def self.load(value)
-          return if value.nil?
-
-          value.to_i == 1
-        end
-      end
+      # class Boolean < Lotus::Model::Coercer
+      #   def self.dump(value)
+      #     return if value.nil?
+      #
+      #     (value == true)
+      #   end
+      #
+      #   def self.load(value)
+      #     return if value.nil?
+      #
+      #     (value == true)
+      #   end
+      # end
 
 
       class Time < Lotus::Model::Coercer
